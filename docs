@@ -1,0 +1,114 @@
+	Shield’s Steg Pro — Technical Documentation
+1. Introduction
+Shield’s Steg Pro (v1.0) is a Python-based steganography framework with a user-friendly Tkinter GUI.
+It allows researchers, developers, and security professionals to embed and extract hidden payloads in digital images using state-of-the-art techniques for security, robustness, and stealth.
+Unlike simplistic LSB tools, Shield’s Steg Pro incorporates compression, encryption, forward error correction, and pseudo-random pixel ordering, making payloads highly resilient against corruption, accidental modifications, and detection.
+
+2. Features at a Glance
+•	Steganography Core
+o	Lossless embedding in PNG/BMP images (JPEG supported but lossy).
+o	Bit-level control with error correction and randomization.
+•	Security Enhancements
+o	AES-256 (Fernet) encryption with SHA-256 key derivation.
+o	Integrity verification via SHA-256 checksums.
+•	Robustness
+o	Hamming (7,4) error correction to fix single-bit errors.
+o	PRNG-based pixel order shuffling keyed with a 64-bit seed.
+•	User Interface
+o	Tabbed GUI (Embed / Extract / Metadata).
+o	Capacity estimator to calculate maximum payload.
+o	Real-time logs during extraction.
+•	Metadata Utilities
+o	Write arbitrary key/value pairs into PNG text chunks.
+o	Read metadata from PNG files.
+
+3. System Requirements
+•	Operating System: Windows / Linux / macOS
+•	Python Version: 3.8 or higher
+•	Dependencies:
+o	pillow (image processing)
+o	cryptography (encryption)
+Install via:
+pip install -r requirements.txt
+
+4. Architecture Overview
+4.1 Core Components
+•	embed_data_into_image()
+o	Converts payload into bits.
+o	Applies compression, encryption, and Hamming ECC.
+o	Embeds header + payload into LSB of pixels.
+•	extract_data_from_image()
+o	Reads and validates header.
+o	Extracts payload bits (reversing PRNG shuffle).
+o	Applies ECC correction, decryption, decompression.
+o	Verifies integrity with SHA-256.
+•	Header Format (56 bytes total)
+•	MAGIC (6) + VERSION (1) + FLAGS (1) +
+•	SEED (8) + PLAIN_LEN (4) + ENC_LEN (4) + SHA256(plain) (32)
+•	Flags
+o	0x01 → Compression enabled
+o	0x02 → Encryption enabled
+o	0x04 → Hamming ECC enabled
+o	0x08 → PRNG shuffle enabled
+4.2 GUI Components
+•	Embed Tab → Select cover image, enter payload, configure options.
+•	Extract Tab → Load stego image, extract with logs, save payload.
+•	Metadata Tab → Write or read PNG text metadata.
+
+5. Usage Guide
+5.1 Embedding Workflow
+1.	Launch application:
+2.	python Steg.py
+3.	Select cover image (.png / .bmp).
+4.	Choose payload type: text, URL, or file.
+5.	Configure options: compression, Hamming ECC, PRNG, passphrase.
+6.	Specify output image.
+7.	(Optional) Add PNG metadata marker.
+8.	Click Embed Now → Payload hidden.
+
+5.2 Extraction Workflow
+1.	Load stego image.
+2.	Provide passphrase (if encryption used).
+3.	Choose Scan (header only) or Extract (full payload).
+4.	Save extracted payload.
+5.	Review verbose log for details.
+
+6. Security Considerations
+•	Confidentiality: Payloads encrypted with AES-256 (Fernet).
+•	Integrity: SHA-256 ensures no tampering.
+•	Robustness: Hamming code corrects single-bit errors.
+•	Stealth: PRNG shuffle distributes bits non-sequentially, complicating detection.
+⚠️ Note: Lossy formats (e.g., JPEG) may destroy hidden data.
+Always use PNG/BMP for guaranteed recovery.
+
+7. Example Demonstration
+Embedding a File
+Cover Image:   cover.png
+Payload File:  secret.pdf
+Passphrase:    StrongPass!
+Options:       Compress + Hamming + PRNG
+Output Image:  stego.png
+Extraction Result
+Stego header detected:
+  Version: 1
+  Flags: compressed, encrypted, hamming, prng
+  Plain payload length: 1542 bytes
+  Encoded payload length: 1987 bytes
+  Seed: 813429310948533172
+
+[Verbose Log]
+- PRNG permutation applied
+- Hamming decode: corrected 3 bits
+- Decryption successful
+- Decompression successful
+- SHA-256 verified: Payload intact
+8. Limitations & Future Work
+•	Current Scope: Image-based steganography only.
+•	Future Enhancements:
+o	CLI support for automation.
+o	Audio/video steganography.
+o	Advanced ECC (Reed-Solomon, LDPC).
+o	Steganalysis detection resistance improvements.
+9. License
+This project is licensed under the MIT License. See LICENSE.
+
